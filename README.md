@@ -2,53 +2,61 @@
 
 Uma API simples e objetiva para predição de **match candidato–vaga**. O projeto inclui: pipeline de treino, artefatos versionáveis, API em FastAPI, testes com cobertura focada no código de produção e documentação de execução.
 
-> **Status atual (27/09/2025):**
+> **Status atual (28/09/2025)**
 >
-> * ✅ Modelo **real** treinado e salvo em `models/model.joblib`
-> * ✅ Limite de decisão salvo em `models/decision_threshold.json`
-> * ✅ API FastAPI com `/health` e `/predict`
-> * ✅ Testes: **7 passando**, cobertura **88%** (somente `src/api.py`)
-> * 🟨 Documentação/Docker/Deploy: ver *Roadmap*
+> - ✅ **Modelo treinado** e salvo em `models/model.joblib`
+> - ✅ **Threshold** salvo em `models/decision_threshold.json`
+> - ✅ **Métricas de validação (holdout)** em `models/metrics.json`
+> - ✅ **Métricas de CV (5 folds)** em `models/metrics_cv.json`
+> - ✅ **API FastAPI** (`/health`, `/predict`) com **middleware de logs**
+> - ✅ **Testes**: 7 passando • **cobertura 89%** em `src/api.py`
+> - ✅ **Docker**: imagem `decision-api` funcionando localmente
+> - ✅ **Drift**: `docs/drift_report.html` + `docs/drift_summary.json` (Plotly/Evidently)
+> - ✅ **Repositório público** com **Git LFS** para `models/*.joblib`
 
 ---
 
 ## Sumário
 
-* [Arquitetura](#arquitetura)
-* [Estrutura do repositório](#estrutura-do-repositório)
-* [Setup rápido](#setup-rápido)
-* [Dados de entrada](#dados-de-entrada)
-* [Treinamento do modelo](#treinamento-do-modelo)
-* [API (FastAPI)](#api-fastapi)
-
-  * [Executar localmente](#executar-localmente)
-  * [Endpoints](#endpoints)
-  * [Exemplos de requisição](#exemplos-de-requisição)
-* [Testes e cobertura](#testes-e-cobertura)
-* [Decisões de modelagem](#decisões-de-modelagem)
-* [Docker (opcional)](#docker-opcional)
-* [Roadmap / Próximos passos](#roadmap--próximos-passos)
-* [Licença](#licença)
+- [Arquitetura](#arquitetura)
+- [Estrutura do repositório](#estrutura-do-repositório)
+- [Setup rápido](#setup-rápido)
+- [Dados de entrada](#dados-de-entrada)
+- [Treinamento do modelo](#treinamento-do-modelo)
+- [API (FastAPI)](#api-fastapi)
+  - [Executar localmente](#executar-localmente)
+  - [Endpoints](#endpoints)
+  - [Exemplos de requisição](#exemplos-de-requisição)
+- [Testes e cobertura](#testes-e-cobertura)
+- [Decisões de modelagem](#decisões-de-modelagem)
+- [Docker](#docker)
+- [Monitoramento & Drift](#monitoramento--drift)
+- [Publicação (GitHub + LFS)](#publicação-github--lfs)
+- [Licença](#licença)
 
 ---
 
 ## Arquitetura
 
-* **Treino** (`src/train_baseline.py`)
+**Treino** (`src/train_baseline.py`)
+- Constrói dataset a partir de `Jobs.json`, `Applicants.json`, `Prospects.json`.
+- Gera features textuais via **TF-IDF** sobre **texto concatenado padronizado** + 1 feature numérica (`score_tecnico`).
+- Treina **LogisticRegression** e escolhe o **threshold** (ponto de *Youden* em ROC; fallback `0.59`).
+- Salva: `models/model.joblib`, `models/decision_threshold.json`, `models/metrics.json`.
 
-  * Constrói dataset a partir de `Jobs.json`, `Applicants.json`, `Prospects.json`.
-  * Gera features textuais via `TF-IDF` sobre concatenação padronizada + 1 feature numérica (`score_tecnico`, similaridade de termos vaga×candidato).
-  * Treina `LogisticRegression` e calcula threshold (ponto de Youden em ROC; fallback 0.59).
-  * Salva artefatos em `models/`.
-* **Serviço** (`src/api.py`)
+**Validação cruzada** (`src/train_cv.py`)
+- `StratifiedKFold(n_splits=5)` com escolha de threshold **no treino** de cada fold.
+- Salva médias/DP em `models/metrics_cv.json`.
 
-  * Carrega `models/model.joblib` e `models/decision_threshold.json` ao iniciar.
-  * Endpoint `/predict` recebe o contrato de produção e retorna probabilidade e rótulo binário usando o threshold.
-  * `_predict_proba_flexible` aceita múltiplos formatos de entrada do pipeline (DF original; DF `{"text": ...}`; lista 1D).
-* **Qualidade** (`tests/`)
+**Serviço** (`src/api.py`)
+- Carrega modelo + threshold na inicialização.
+- `/predict` recebe contrato de produção e retorna `y_prob` e `y_pred`.
+- `_predict_proba_flexible`: tolera múltiplos formatos do pipeline (DF original → DF `{"text": ...}` → lista 1D).
+- **Middleware de logs** (tempo de resposta, status, rota).
 
-  * Testes unitários e de integração (FastAPI `TestClient`).
-  * Cobertura focada **apenas** no código de produção (`src/api.py`).
+**Qualidade** (`tests/`)
+- Testes unitários da lógica interna e de integração com FastAPI `TestClient`.
+- Cobertura **apenas** em `src/api.py` (código de produção).
 
 ---
 
@@ -57,22 +65,38 @@ Uma API simples e objetiva para predição de **match candidato–vaga**. O proj
 ```
 .
 ├─ src/
-│  ├─ api.py                # FastAPI + lógica de predição
-│  ├─ train_baseline.py     # Treino do modelo (fim-a-fim)
-│  └─ ...                   # Scripts auxiliares/opcionais
+│ ├─ api.py # FastAPI + predição + middleware de logs
+│ ├─ train_baseline.py # Treino + holdout + salvamento de métricas
+│ ├─ train_cv.py # Cross-validation (5×) + métricas médias/DP
+│ ├─ make_drift_report.py # PSI/KS (Plotly) ou Evidently (fallback seguro)
+│ └─ ... # utilitários/inspeções (opcionais)
 ├─ tests/
-│  ├─ test_api_internal.py  # Testes unitários da função flexível
-│  └─ test_api_endpoints.py # Testes de integração (/health, /predict)
-├─ data/                    # Coloque aqui os JSONs (ou em data/raw/)
-│  ├─ Applicants.json
-│  ├─ Jobs.json
-│  └─ Prospects.json
+│ ├─ conftest.py
+│ ├─ test_api.py
+│ ├─ test_api_endpoints.py
+│ └─ test_api_internal.py
+├─ data/ # (coloque aqui os JSONs brutos)
+│ ├─ Applicants.json
+│ ├─ Jobs.json
+│ └─ Prospects.json
 ├─ models/
-│  ├─ model.joblib              # (gerado pelo treino)
-│  └─ decision_threshold.json   # (gerado pelo treino)
-├─ pytest.ini               # Configurações do pytest/coverage
-├─ .coveragerc              # Configuração do relatório de coverage
-└─ requirements.txt         # Dependências (sugestão)
+│ ├─ model.joblib
+│ ├─ decision_threshold.json
+│ ├─ metrics.json
+│ └─ metrics_cv.json
+├─ docs/
+│ ├─ drift_report.html
+│ └─ drift_summary.json
+├─ Dockerfile
+├─ docker-compose.yml
+├─ requirements.txt # dev
+├─ requirements-api.txt # runtime da imagem Docker
+├─ requirements-dev.txt # extras opcionais
+├─ pytest.ini
+├─ .coveragerc
+├─ .dockerignore
+├─ .gitignore
+└─ .gitattributes # Git LFS p/ models/*.joblib
 ```
 
 ---
@@ -626,14 +650,3 @@ docker run -p 8000:8000 decision-api
 Acesse `http://localhost:8000/docs` (ou `:8001` se usou o mapeamento alternativo).
 
 ---
-
-# Estado da Entrega (agora)
-
-* ✅ **Pipeline de ML** (pré-processamento, features, treino) + modelo salvo (`models/model.joblib`).
-* ✅ **Validação (Holdout)** com métricas em `models/metrics.json`.
-* ✅ **Validação (K-Fold 5×)** com médias/DP em `models/metrics_cv.json`.
-* ✅ **API FastAPI** (`/health`, `/predict`) + **testes** com **88%** de cobertura.
-* ✅ **Docker** (imagem `decision-api`) — execução local.
-* ✅ **Monitoramento**: `docs/drift_report.html` (Plotly fallback com PSI/KS).
-* ⏳ **Publicação**: subir no **GitHub** (usar **Git LFS** para `models/*.joblib`) e anexar prints (`/health`, `/docs`, `/predict`).
-* ⏳ **Vídeo** (≤ 5 min): contexto → solução → demo → resultados → drift.
