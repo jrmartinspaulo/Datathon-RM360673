@@ -1,0 +1,22 @@
+# Virtual env
+venv/
+.env
+
+# Git e IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.ipynb_checkpoints/
+.DS_Store
+
+# Não embutir dados/modelos na imagem (vamos montar via volume)
+data/
+models/

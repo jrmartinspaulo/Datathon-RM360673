@@ -1,0 +1,13 @@
+# ambientes & cache
+venv/
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# dados (mantém só artefatos derivados em docs/)
+data/
+notebooks/.ipynb_checkpoints/
+
+# relatórios locais
+docs/media/

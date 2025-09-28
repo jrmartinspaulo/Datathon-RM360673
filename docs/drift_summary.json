@@ -1,0 +1,8 @@
+{
+  "generated_at": "2025-09-28T10:59:38.492287+00:00",
+  "feature": "score_tecnico",
+  "method": "plotly",
+  "n_ref": 9759,
+  "n_cur": 2440,
+  "note": "Se method=evidently, layout Evidently; senão, fallback Plotly com PSI e KS."
+}
