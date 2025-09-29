@@ -2,7 +2,7 @@
 
 Uma API simples e objetiva para predição de **match candidato–vaga**. O projeto inclui: pipeline de treino, artefatos versionáveis, API em FastAPI, testes com cobertura focada no código de produção e documentação de execução.
 
->
+
 > - ✅ **Modelo treinado** e salvo em `models/model.joblib`
 > - ✅ **Threshold** salvo em `models/decision_threshold.json`
 > - ✅ **Métricas de validação (holdout)** em `models/metrics.json`
@@ -74,7 +74,7 @@ Uma API simples e objetiva para predição de **match candidato–vaga**. O proj
 │ ├─ test_api.py
 │ ├─ test_api_endpoints.py
 │ └─ test_api_internal.py
-├─ data/ # (coloque aqui os JSONs brutos)
+├─ data/
 │ ├─ Applicants.json
 │ ├─ Jobs.json
 │ └─ Prospects.json
@@ -649,7 +649,7 @@ docker run -p 8000:8000 decision-api
 Acesse `http://localhost:8000/docs` (ou `:8001` se usou o mapeamento alternativo).
 
 
-✅ Seção “Deploy” — pronta pra colar
+✅ Seção “Deploy”
 Deploy
 
 Este projeto foi implantado localmente via Docker.
