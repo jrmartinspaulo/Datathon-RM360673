@@ -2,7 +2,6 @@
 
 Uma API simples e objetiva para predição de **match candidato–vaga**. O projeto inclui: pipeline de treino, artefatos versionáveis, API em FastAPI, testes com cobertura focada no código de produção e documentação de execução.
 
-> **Status atual (28/09/2025)**
 >
 > - ✅ **Modelo treinado** e salvo em `models/model.joblib`
 > - ✅ **Threshold** salvo em `models/decision_threshold.json`
@@ -649,4 +648,30 @@ docker run -p 8000:8000 decision-api
 
 Acesse `http://localhost:8000/docs` (ou `:8001` se usou o mapeamento alternativo).
 
+
+✅ Seção “Deploy” — pronta pra colar
+Deploy
+
+Este projeto foi implantado localmente via Docker.
+
+-Build da imagem:
+```bash
+docker build -t decision-api .
+```
+
+-Execução:
+```bash
+# mapeando porta do host 8001 -> 8000 do container
+docker run -p 8001:8000 decision-api
+# acessar: http://localhost:8001/health e http://localhost:8001/docs
+```
+
+Estado verificado após deploy:
+
+/health → {"status":"ok","model_loaded":true,"threshold":0.44}
+
+/predict → responde 200 OK com y_prob e y_pred (>0.44 → 1)
+
+Observação: os artefatos do modelo (pasta models/) são copiados para a imagem. Alternativamente, é possível montar como volume:
+docker run -p 8001:8000 -v "${PWD}/models:/app/models" decision-api
 ---
