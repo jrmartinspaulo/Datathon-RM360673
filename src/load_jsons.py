@@ -45,7 +45,7 @@ def flatten_dict(d: Dict[str, Any], parent_key: str = "", sep: str = "__") -> Di
         elif _is_list_of_primitives(v):
             items.append((new_key, " | ".join(map(str, v))))
         elif isinstance(v, list):
-            # lista complexa: mantemos como JSON para não perder informação
+            # lista complexa
             items.append((new_key, json.dumps(v, ensure_ascii=False)))
         else:
             items.append((new_key, v))
@@ -124,7 +124,7 @@ def load_prospects(path: Path) -> pd.DataFrame:
         for it in (lista or []):
             item = it
 
-            # String (comentário ou JSON serializado)
+            # String
             if isinstance(item, str):
                 str_items += 1
                 try:

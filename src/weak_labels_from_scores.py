@@ -310,7 +310,7 @@ if __name__ == "__main__":
         "min_score": DEFAULT_MIN_SCORE,
         "quantile": DEFAULT_QUANTILE,
     }
-    # YAML opcional
+    # YAML
     cfg = _read_yaml_config(CONFIG_YAML)
     params.update({k: v for k, v in cfg.items() if v is not None})
     # CLI override (se passado)

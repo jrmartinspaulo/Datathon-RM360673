@@ -22,7 +22,7 @@ PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 PROSPECTS_CSV = INTERIM_DIR / "prospects.csv"
 OUT_CSV = PROCESSED_DIR / "labels_by_candidato_vaga.csv"
 
-# Valores de 'situacao' claramente positivos (depois de normalizar)
+# Valores de 'situacao' claramente positivos
 POSITIVE_SITUACOES = {
     "contratado", "contratada",
     "aprovado", "aprovada",
@@ -37,7 +37,7 @@ POSITIVE_SITUACOES = {
     "selecionado", "selecionada",
 }
 
-# Palavras/raizes que denotam positivo (aplicadas em situacao e comentario)
+# Palavras/raizes que denotam positivo
 POSITIVE_KEYWORDS = [
     r"\bcontrat",       # contratado/contratada/contratar
     r"\baprov",         # aprovado/aprovação

@@ -35,7 +35,7 @@ def test_predict_ok(api_client, api_payload):
 
 
 def test_predict_validation_error_missing_job_text(api_client):
-    # faltando job_text -> FastAPI deve retornar 422
+    
     bad_payload = {
         "cand_text": "texto do candidato",
         "score_tecnico": 0.1,

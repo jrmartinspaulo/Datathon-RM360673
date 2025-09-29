@@ -11,7 +11,7 @@ if str(ROOT) not in sys.path:
 import json
 import types
 from fastapi.testclient import TestClient
-from src import api as api_module  # agora deve funcionar
+from src import api as api_module
 
 def _ensure_models_and_threshold():
     """
@@ -21,13 +21,12 @@ def _ensure_models_and_threshold():
     models_dir = ROOT / "models"
     models_dir.mkdir(parents=True, exist_ok=True)
 
-    # threshold padrão (se não existir)
+    # threshold padrão
     thr_file = models_dir / "decision_threshold.json"
     if not thr_file.exists():
         thr_file.write_text(json.dumps({"threshold": 0.59}, ensure_ascii=False), encoding="utf-8")
 
-    # se não houver model_cv.joblib nem model.joblib, criamos um mock bem leve
-    # para não depender de treinos nos testes de API.
+    
     model_path_cv = models_dir / "model_cv.joblib"
     model_path = models_dir / "model.joblib"
     if not model_path_cv.exists() and not model_path.exists():
@@ -38,7 +37,7 @@ def _ensure_models_and_threshold():
                 # retorna probabilidade alta quando score_tecnico >= 0.3
                 probs = []
                 for row in X:
-                    # X é texto composto; só para manter compatibilidade, devolvemos algo fixo
+                    # X é texto composto; só para manter compatibilidade
                     probs.append([0.2, 0.8])
                 return np.array(probs)
 

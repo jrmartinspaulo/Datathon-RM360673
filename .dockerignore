@@ -19,4 +19,4 @@ __pycache__/
 
 # Não embutir dados/modelos na imagem (vamos montar via volume)
 data/
-models/
+#models/

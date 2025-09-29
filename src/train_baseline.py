@@ -34,7 +34,7 @@ THRESHOLD_FILE = MODELS_DIR / "decision_threshold.json"
 METRICS_FILE = MODELS_DIR / "metrics.json"
 DEFAULT_THRESHOLD = 0.59
 
-# === Ajustado ao seu formato (conforme peek/inspect) ===
+
 # Prospects.json: dict[vaga_code] -> { titulo, modalidade, prospects: [ { nome, codigo, situacao_candidado, comentario, ... } ] }
 CANDIDATE_KEY = ["codigo"]  # id do candidato dentro de cada item de prospects
 STATUS_KEYS = ["situacao_candidado", "situacao", "status"]  # pode estar vazio
@@ -53,7 +53,7 @@ APPLICANT_SUBDICT_KEYS = [
 ]
 APPLICANT_CV_KEYS = ["cv_pt", "cv_en"]
 
-# Rótulos por substring (ajuste se necessário conforme seus comentários reais)
+# Rótulos por substring
 POS_KEYS = {
     "aprovado",
     "aprovacao",
@@ -171,7 +171,7 @@ def score_tecnico(job_text: str, cand_text: str) -> float:
 # --- helpers pickláveis (nível de módulo) ---
 # --------------------------------------------------------------------------------------
 def concat_cols_df(X):
-    # mesma lógica usada na sua API
+    
     return (
         "[JOB]" + X["job_text"].astype(str) + " "
         + "[CAND]" + X["cand_text"].astype(str) + " "
@@ -303,7 +303,7 @@ def main():
     if df.empty:
         raise RuntimeError("Sem pares gerados. Verifique a estrutura dos JSONs.")
 
-    # Weak labels pelos extremos do score_tecnico (se faltar rótulo explícito)
+    # Weak labels pelos extremos do score_tecnico
     unlabeled = df["y"].isna()
     if unlabeled.any():
         scores = df.loc[unlabeled, "score_tecnico"].values
@@ -312,7 +312,7 @@ def main():
             t_neg = float(np.nanpercentile(scores, PCTL_NEG * 100))
             df.loc[unlabeled & (df["score_tecnico"] >= t_pos), "y"] = 1
             df.loc[unlabeled & (df["score_tecnico"] <= t_neg), "y"] = 0
-            # faixa cinza é descartada
+            
             df = df.dropna(subset=["y"])
         else:
             df = df.dropna(subset=["y"])
