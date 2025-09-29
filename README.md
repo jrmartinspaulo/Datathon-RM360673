@@ -650,7 +650,6 @@ Acesse `http://localhost:8000/docs` (ou `:8001` se usou o mapeamento alternativo
 
 
 ✅ Seção “Deploy”
-Deploy
 
 Este projeto foi implantado localmente via Docker.
 
